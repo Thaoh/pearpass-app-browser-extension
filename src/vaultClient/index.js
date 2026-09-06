@@ -7,7 +7,9 @@ import {
   DESKTOP_APP_STATUS,
   ERROR_CODES,
   NATIVE_MESSAGE_TYPES,
+  NATIVE_MESSAGING_ERRORS,
   PAIRING_REASONS,
+  REQUEST_TIMEOUT,
   SPECIAL_COMMANDS,
   VAULT_CLIENT_CONFIG,
   VAULT_CLIENT_ERRORS,
@@ -107,20 +109,49 @@ export class PearpassVaultClient extends EventEmitter {
    */
   _sendMessage(message) {
     return new Promise((resolve, reject) => {
-      runtime.sendMessage(message, (response) => {
-        if (runtime.lastError) {
-          return reject(new Error(runtime.lastError.message))
-        }
+      let settled = false
+      const timeoutId = setTimeout(() => {
+        finish(
+          new Error(
+            `${NATIVE_MESSAGING_ERRORS.REQUEST_TIMEOUT}: ${message?.type || 'runtime'}`
+          )
+        )
+      }, REQUEST_TIMEOUT.DEFAULT_MS)
 
-        // Background always returns structured errors with codes
+      const finish = (err, response) => {
+        if (settled) return
+        settled = true
+        clearTimeout(timeoutId)
+        if (err) {
+          reject(err)
+          return
+        }
+        if (runtime.lastError) {
+          reject(new Error(runtime.lastError.message))
+          return
+        }
         if (response && !response.success && response.error) {
           const error = new Error(response.error)
           error.code = response.code || ERROR_CODES.UNKNOWN
-          return reject(error)
+          reject(error)
+          return
         }
-
         resolve(response)
-      })
+      }
+
+      try {
+        const maybe = runtime.sendMessage(message, (response) => {
+          finish(null, response)
+        })
+        if (maybe && typeof maybe.then === 'function') {
+          maybe.then(
+            (response) => finish(null, response),
+            (err) => finish(err)
+          )
+        }
+      } catch (error) {
+        finish(error)
+      }
     })
   }
 

@@ -62,7 +62,7 @@ runtime.onSuspend?.addListener(() => {
   }
 })
 
-chrome.windows.onFocusChanged.addListener(async (windowId) => {
+chrome.windows?.onFocusChanged?.addListener(async (windowId) => {
   if (windowId === chrome.windows.WINDOW_ID_NONE) {
     return
   }

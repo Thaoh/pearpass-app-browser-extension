@@ -9,7 +9,9 @@ export const validateSender = (sender, requiredContext = 'any') => {
 
   switch (requiredContext) {
     case 'extension-page':
-      return sender.url?.startsWith(extensionUrl)
+      if (sender.url?.startsWith(extensionUrl)) return true
+      // Firefox popup messages often omit sender.url.
+      return Boolean(sender.id && sender.id === chrome.runtime?.id)
     case 'content-script':
       return sender.tab?.id !== undefined
     case 'any':

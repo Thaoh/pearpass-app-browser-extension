@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState, useRef } from 'react'
 
+import { blockingStateFromCheck } from './blockingStateFromCheck'
 import { client } from '../../../shared/client'
 import {
   BACKGROUND_MESSAGE_TYPES,
@@ -84,16 +85,7 @@ export const useBlockingState = () => {
     setIsChecking(true)
     try {
       const result = await secureChannelMessages.getBlockingState()
-
-      if (!result.success) {
-        logger.error(
-          '[useBlockingState] Failed to get blocking state:',
-          result.error
-        )
-        return
-      }
-
-      const state = result.blockingState
+      const state = blockingStateFromCheck(result)
       setBlockingState(state)
 
       if (!state) return
@@ -110,6 +102,9 @@ export const useBlockingState = () => {
       }
     } catch (error) {
       logger.error('[useBlockingState] Unexpected error:', error)
+      const state = blockingStateFromCheck(undefined, error)
+      setBlockingState(state)
+      showConnectionModal(handleConnectionRetry, state.error)
     } finally {
       setIsChecking(false)
     }

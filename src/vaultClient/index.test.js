@@ -125,6 +125,21 @@ describe('PearpassVaultClient', () => {
       expect(client.connected).toBe(true)
     })
 
+    it('rejects when the background never answers sendMessage', async () => {
+      jest.useFakeTimers()
+      try {
+        const client = createMockClient()
+        runtime.sendMessage.mockImplementation(() => {})
+
+        const pending = client.connect()
+        const assertion = expect(pending).rejects.toThrow(/timeout/i)
+        await jest.advanceTimersByTimeAsync(10_000)
+        await assertion
+      } finally {
+        jest.useRealTimers()
+      }
+    })
+
     it('should not connect twice', async () => {
       const client = createMockClient()
       client.connected = true

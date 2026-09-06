@@ -5,6 +5,7 @@ const EXTENSION_URL = `chrome-extension://${EXTENSION_ID}/`
 
 global.chrome = {
   runtime: {
+    id: EXTENSION_ID,
     getURL: (path) => `${EXTENSION_URL}${path}`
   }
 }
@@ -24,6 +25,11 @@ describe('validateSender', () => {
     it('blocks messages with undefined url', () => {
       const sender = { url: undefined }
       expect(validateSender(sender, 'extension-page')).toBeFalsy()
+    })
+
+    it('allows Firefox popup messages that omit url but match runtime id', () => {
+      const sender = { id: EXTENSION_ID, url: undefined }
+      expect(validateSender(sender, 'extension-page')).toBe(true)
     })
   })
 

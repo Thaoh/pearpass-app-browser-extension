@@ -9,6 +9,14 @@ Starts at 0.0.17, after the Lockwright package rename. Earlier history is git.
 
 ## [Unreleased]
 
+## [0.0.23] - 2026-09-10
+
+`d2faea1c4ce956b6c66f32ced05250b92cc3f8f8`
+
+### Fixed
+
+- First pair pins the desktop identity before vault login so a correct master password is not shown as wrong. Confirm still waits until the vault accepts it.
+
 ## [0.0.22] - 2026-09-06
 
 `3f86daa75d12a76923b369c13d54fa9c5f0be029`
@@ -71,7 +79,8 @@ Starts at 0.0.17, after the Lockwright package rename. Earlier history is git.
 - Login-detect popup closes after a successful save.
 - Onboarding wordmark capped so the pair step still fits.
 
-[unreleased]: https://github.com/Thaoh/lockwright-app-browser-extension/compare/3f86daa75d12a76923b369c13d54fa9c5f0be029...HEAD
+[unreleased]: https://github.com/Thaoh/lockwright-app-browser-extension/compare/d2faea1c4ce956b6c66f32ced05250b92cc3f8f8...HEAD
+[0.0.23]: https://github.com/Thaoh/lockwright-app-browser-extension/compare/3f86daa75d12a76923b369c13d54fa9c5f0be029...d2faea1c4ce956b6c66f32ced05250b92cc3f8f8
 [0.0.22]: https://github.com/Thaoh/lockwright-app-browser-extension/compare/cdabb34b9d54a8220d7f20aa465d0f49016beeb4...3f86daa75d12a76923b369c13d54fa9c5f0be029
 [0.0.21]: https://github.com/Thaoh/lockwright-app-browser-extension/compare/caae17d0182e756e65b20674a56b2df17ba98274...cdabb34b9d54a8220d7f20aa465d0f49016beeb4
 [0.0.20]: https://github.com/Thaoh/lockwright-app-browser-extension/compare/85ff729a2f1079b7f95a1aa8b9e1c7af477d08a9...caae17d0182e756e65b20674a56b2df17ba98274

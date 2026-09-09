@@ -48,6 +48,7 @@ describe('usePairing', () => {
     useToast.mockReturnValue({ setToast: mockSetToast })
     useUserData.mockReturnValue({ logIn: mockLogIn })
     useVaults.mockReturnValue({ initVaults: mockInitVaults })
+    secureChannelMessages.pinIdentity.mockResolvedValue({ success: true })
   })
 
   it('should initialize with default values', () => {
@@ -182,6 +183,13 @@ describe('usePairing', () => {
       expect(secureChannelMessages.pinIdentity).toHaveBeenCalledWith(
         mockIdentity
       )
+      const pinOrder =
+        secureChannelMessages.pinIdentity.mock.invocationCallOrder[0]
+      const loginOrder = mockLogIn.mock.invocationCallOrder[0]
+      const confirmOrder =
+        secureChannelMessages.confirmPair.mock.invocationCallOrder[0]
+      expect(pinOrder).toBeLessThan(loginOrder)
+      expect(loginOrder).toBeLessThan(confirmOrder)
       expect(mockLogIn).toHaveBeenCalledWith({ password: 'password' })
       expect(mockInitVaults).toHaveBeenCalledWith({ password: 'password' })
       expect(secureChannelMessages.commitClientKeystore).toHaveBeenCalled()
@@ -198,6 +206,7 @@ describe('usePairing', () => {
         success: true,
         identity: mockIdentity
       })
+      secureChannelMessages.pinIdentity.mockResolvedValue({ success: true })
       mockLogIn.mockRejectedValueOnce(new Error('Invalid master password'))
 
       const { result } = renderHook(() => useDesktopPairing(props))
@@ -213,8 +222,10 @@ describe('usePairing', () => {
       })
 
       expect(mockLogIn).toHaveBeenCalledWith({ password: 'wrong-password' })
+      expect(secureChannelMessages.pinIdentity).toHaveBeenCalledWith(
+        mockIdentity
+      )
       expect(secureChannelMessages.confirmPair).not.toHaveBeenCalled()
-      expect(secureChannelMessages.pinIdentity).not.toHaveBeenCalled()
       expect(secureChannelMessages.unlockClientKeystore).not.toHaveBeenCalled()
       expect(secureChannelMessages.commitClientKeystore).not.toHaveBeenCalled()
       expect(secureChannelMessages.unpair).not.toHaveBeenCalled()

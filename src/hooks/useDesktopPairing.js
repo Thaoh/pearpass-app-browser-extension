@@ -196,18 +196,16 @@ export const useDesktopPairing = ({
 
   /**
    * Confirms pairing after the vault has accepted the master password.
+   * Identity is already pinned so login could open a secure session.
    * @async
-   * @param {Object} validatedIdentity - The validated desktop identity
    * @returns {Promise<void>}
-   * @throws {Error} If pairing confirmation or identity pinning fails
+   * @throws {Error} If pairing confirmation fails
    */
-  const finalizePairing = async (validatedIdentity) => {
+  const finalizePairing = async () => {
     const { confirmed: pairingConfirmed } =
       await secureChannelMessages.confirmPair()
-    const { success: identityPinned } =
-      await secureChannelMessages.pinIdentity(validatedIdentity)
 
-    if (!pairingConfirmed || !identityPinned) {
+    if (!pairingConfirmed) {
       handleBack()
       setIdentity(null)
       await secureChannelMessages.unpair()
@@ -242,6 +240,17 @@ export const useDesktopPairing = ({
       const validatedIdentity = await revalidateIdentity()
       if (!validatedIdentity) return
 
+      // Pin before vault login so the secure channel can handshake.
+      // Desktop still treats the browser as PENDING until confirmPair.
+      const { success: identityPinned } =
+        await secureChannelMessages.pinIdentity(validatedIdentity)
+      if (!identityPinned) {
+        handleBack()
+        setIdentity(null)
+        await secureChannelMessages.unpair()
+        throw new Error(PAIRING_ERROR_MESSAGES.PAIRING_FAILED)
+      }
+
       try {
         await logIn({ password })
         await initVaults({ password })
@@ -254,7 +263,7 @@ export const useDesktopPairing = ({
       const unlocked = await unlockKeystore(password)
       if (!unlocked) return
 
-      await finalizePairing(validatedIdentity)
+      await finalizePairing()
     } catch (error) {
       logger.error('Failed to complete pairing:', error)
       const isPairingFailed =

@@ -107,7 +107,11 @@ const storageSet = (obj) =>
  *
  * @returns {Promise<{ publicKey: Uint8Array, privateKey: Uint8Array }>}
  */
-const getOrCreateClientIdentity = async () => ensureClientKeypairUnlocked()
+const getOrCreateClientIdentity = async () => {
+  const generated = await ensureClientKeypairGeneratedForPairing()
+  if (generated?.privateKey) return generated
+  return ensureClientKeypairUnlocked()
+}
 
 /**
  * Minimal secure channel client.
@@ -251,7 +255,7 @@ export class SecureChannelClient {
 
     // Check keypair is ready for signing
     try {
-      const { privateKey } = await ensureClientKeypairUnlocked()
+      const { privateKey } = await getOrCreateClientIdentity()
       if (!privateKey) {
         throw new Error(AUTH_ERROR_PATTERNS.MASTER_PASSWORD_REQUIRED)
       }
